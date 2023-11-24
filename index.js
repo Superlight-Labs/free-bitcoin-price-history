@@ -128,3 +128,25 @@ try {
   console.error(err);
   process.exit(1);
 }
+
+process.on("uncaughtException", (err) => {
+  app.log.error({ err }, "Uncaugh Exception");
+  app.log.warn("Shutting down server because of uncaught exception");
+
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  app.log.error(
+    {
+      error: reason,
+    },
+    "Unhandled Promise Rejection"
+  );
+
+  // need to log the promise without stringifying it to properly
+  // display all rejection info
+  app.log.warn({ promise });
+
+  process.exit(1);
+});
