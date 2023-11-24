@@ -37,6 +37,10 @@ app.addHook("preHandler", (req, reply, done) => {
   done();
 });
 
+app.get("/", () => {
+  return { status: "ok" };
+});
+
 app.get("/health", () => {
   return { status: "ok" };
 });
