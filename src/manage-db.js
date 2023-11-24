@@ -50,7 +50,7 @@ const updateWeeklyTable = async (hour) => {
   app.log.info("Fetching latest weekly pricepoint...");
   const [latestWeekly] = await prisma.pricePointWeekly.findMany({
     orderBy: {
-      date: "desc",
+      time: "desc",
     },
     take: 1,
   });
@@ -89,7 +89,7 @@ const updateDailyTable = async (hour) => {
 
   const [latestDaily] = await prisma.pricePointDaily.findMany({
     orderBy: {
-      date: "desc",
+      time: "desc",
     },
     take: 1,
   });

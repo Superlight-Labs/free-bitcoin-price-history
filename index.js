@@ -1,26 +1,22 @@
-import { createHourlyPricePoint } from "./src/manage-db.js";
+import { createHourlyPricePoint, initDatabase } from "./src/manage-db.js";
 
 import fastifyEnv from "@fastify/env";
 import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
 import fastifyCron from "fastify-cron";
 
-import { fetchDaily, fetchHourly } from "./src/fetch-data.js";
-
 export const prisma = new PrismaClient();
 export const app = fastify({ logger: true });
 
 const hourly = "0 * * * * *";
-
 const thirtySeconds = "*/30 * * * * *";
 
 app.register(fastifyCron, {
   jobs: [
     {
-      // cronTime: hourly,
-      cronTime: thirtySeconds,
+      name: "fetch-new-price-data",
+      cronTime: process.env.NODE_ENV === "production" ? hourly : thirtySeconds,
       onTick: async (_) => createHourlyPricePoint(),
-      startWhenReady: true,
     },
   ],
 });
@@ -39,12 +35,64 @@ app.get("/health", () => {
   return { status: "ok" };
 });
 
-app.get("/daily", () => {
-  return fetchDaily();
+app.get("/total", () => {
+  return prisma.$queryRaw`SELECT * FROM PricePointWeekly WHERE nr % 3 = 0 ORDER BY time asc`;
 });
 
-app.get("/hourly", () => {
-  return fetchHourly();
+app.get("/year", () => {
+  const yearAgo = new Date();
+  yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+
+  return prisma.pricePointWeekly.findMany({
+    where: {
+      time: {
+        gte: yearAgo,
+      },
+    },
+    orderBy: {
+      time: "asc",
+    },
+  });
+});
+
+app.get("/monthly", () => {
+  const monthAgo = new Date();
+  monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+  return prisma.pricePointDaily.findMany({
+    where: {
+      time: {
+        gte: monthAgo,
+      },
+    },
+    orderBy: {
+      time: "asc",
+    },
+  });
+});
+
+app.get("/weekly", () => {
+  return prisma.$queryRaw`
+    SELECT * FROM PricePointHourly 
+    WHERE nr % 3 = 0 
+      AND createdAt between date_sub(now(), INTERVAL 1 WEEK) and now()
+    ORDER BY createdAt asc`;
+});
+
+app.get("/today", () => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  return prisma.pricePointHourly.findMany({
+    where: {
+      createdAt: {
+        gte: yesterday,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
 });
 
 try {
@@ -59,8 +107,9 @@ try {
 
 try {
   app.log.info("Trying to fetch daily data...");
-  // await initDatabase();
+  await initDatabase();
   app.log.info("Successfully fetched daily data.");
+  app.cron.startAllJobs();
 } catch (err) {
   console.error(err);
   process.exit(1);
