@@ -112,11 +112,10 @@ app.all("*", (request, reply) => {
 
 try {
   await app.listen({ port: 3000 });
+  app.log.info({ hello: "world" }, "Test");
   app.log.info(
     { proc: app.config["NODE_ENV"] },
-    `
-  🚀 Server ready at: http://localhost:3000
-  `
+    `🚀 Server ready at: http://localhost:3000`
   );
 } catch (err) {
   console.error(err);
