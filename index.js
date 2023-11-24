@@ -106,6 +106,10 @@ app.get("/today", () => {
   });
 });
 
+app.all("*", (request, reply) => {
+  reply.status(404).send({ error: "Route does not exist" });
+});
+
 try {
   await app.listen({ port: 3000 });
   app.log.info(
