@@ -3,12 +3,14 @@ import { app, prisma } from "../index.js";
 const avantageResKey = "Time Series (Digital Currency Daily)";
 const avantageResKeyHourly = "Realtime Currency Exchange Rate";
 
-export const fetchDaily = async () => {
-  const res = { data: response };
+const isDev = process.env.NODE_ENV === "development";
 
-  //   await axios.get(
-  //     `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
-  //   );
+export const fetchDaily = async () => {
+  const res = isDev
+    ? { data: response }
+    : await axios.get(
+        `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
+      );
 
   app.log.info("Fetching latest weekly pricepoint...");
   const [latest] = await prisma.pricePointWeekly.findMany({
@@ -36,11 +38,11 @@ export const fetchDaily = async () => {
 };
 
 export const fetchHourly = async () => {
-  const res = { data: responseHourly };
-
-  //   await axios.get(
-  //     `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
-  //   );
+  const res = isDev
+    ? { data: responseHourly }
+    : await axios.get(
+        `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
+      );
 
   const priceData = res.data[avantageResKeyHourly];
 
