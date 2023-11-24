@@ -1,3 +1,4 @@
+import axios from "axios";
 import { app, prisma } from "../index.js";
 
 const avantageResKey = "Time Series (Digital Currency Daily)";
