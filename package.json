@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch index.js | pino-pretty",
-    "start": "yarn db:reset && node index.js",
+    "start": "node index.js",
     "db:reset": "prisma db push --force-reset && prisma db seed"
   },
   "dependencies": {
