@@ -11,24 +11,25 @@ export const app = fastify({ logger: true });
 const hourly = "0 * * * * *";
 const thirtySeconds = "*/30 * * * * *";
 
-app.register(fastifyCron, {
-  jobs: [
-    {
-      name: "fetch-new-price-data",
-      cronTime: process.env.NODE_ENV === "production" ? hourly : thirtySeconds,
-      onTick: async (_) => createHourlyPricePoint(),
-    },
-  ],
-});
-
-app.register(fastifyEnv, {
+await app.register(fastifyEnv, {
   dotenv: {
     path: ".env",
   },
   schema: {
     type: "object",
-    required: ["ALPHA_VANTAGE_API_KEY"],
+    required: ["ALPHA_VANTAGE_API_KEY", "NODE_ENV"],
   },
+});
+
+app.register(fastifyCron, {
+  jobs: [
+    {
+      name: "fetch-new-price-data",
+      cronTime:
+        app.config["NODE_ENV"] === "development" ? thirtySeconds : hourly,
+      onTick: async (_) => createHourlyPricePoint(),
+    },
+  ],
 });
 
 app.addHook("preHandler", (req, reply, done) => {
