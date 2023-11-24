@@ -8,7 +8,7 @@ import fastifyCron from "fastify-cron";
 export const prisma = new PrismaClient();
 export const app = fastify({ logger: true });
 
-const hourly = "0 * * * * *";
+const hourly = "0 0 * * * *";
 const thirtySeconds = "*/30 * * * * *";
 
 await app.register(fastifyEnv, {
@@ -17,7 +17,7 @@ await app.register(fastifyEnv, {
   },
   schema: {
     type: "object",
-    required: ["ALPHA_VANTAGE_API_KEY", "NODE_ENV"],
+    required: ["ALPHA_VANTAGE_API_KEY"],
   },
 });
 
@@ -26,7 +26,7 @@ app.register(fastifyCron, {
     {
       name: "fetch-new-price-data",
       cronTime:
-        app.config["NODE_ENV"] === "development" ? thirtySeconds : hourly,
+        process.env["NODE_ENV"] === "development" ? thirtySeconds : hourly,
       onTick: async (_) => createHourlyPricePoint(),
     },
   ],
@@ -110,13 +110,12 @@ app.all("*", (request, reply) => {
   reply.status(404).send({ error: "Route does not exist" });
 });
 
+const port = process.env.PORT || 3000;
+const host = process.env.HOST || "localhost";
+
 try {
-  await app.listen({ port: 3000 });
-  app.log.info({ hello: "world" }, "Test");
-  app.log.info(
-    { proc: app.config["NODE_ENV"] },
-    `🚀 Server ready at: http://localhost:3000`
-  );
+  await app.listen({ port, host });
+  app.log.info(`🚀 Server ready at: http://${host}:${port}`);
 } catch (err) {
   console.error(err);
   process.exit(1);
