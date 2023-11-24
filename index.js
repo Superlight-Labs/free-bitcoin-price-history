@@ -31,6 +31,12 @@ app.register(fastifyEnv, {
   },
 });
 
+app.addHook("preHandler", (req, reply, done) => {
+  reply.header("Content-Type", "application/json");
+  reply.header("Cache-Control", "s-max-age=100, stale-while-revalidate");
+  done();
+});
+
 app.get("/health", () => {
   return { status: "ok" };
 });
