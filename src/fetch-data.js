@@ -13,7 +13,7 @@ export const fetchDaily = async () => {
         `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
       );
 
-  app.log.info("Fetching latest weekly pricepoint...");
+  app.log.debug({ data: res.data }, "Fetching latest weekly pricepoint...");
   const [latest] = await prisma.pricePointWeekly.findMany({
     orderBy: {
       time: "desc",
@@ -22,6 +22,11 @@ export const fetchDaily = async () => {
   });
 
   const priceData = res.data[avantageResKey];
+
+  if (!priceData) {
+    app.log.warn({ data: res.data }, "No price data found");
+    return [];
+  }
 
   return Object.keys(priceData)
     .map((key) => {

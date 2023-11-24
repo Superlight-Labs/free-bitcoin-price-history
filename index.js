@@ -18,6 +18,11 @@ await app.register(fastifyEnv, {
   schema: {
     type: "object",
     required: ["ALPHA_VANTAGE_API_KEY"],
+    properties: {
+      ALPHA_VANTAGE_API_KEY: {
+        type: "string",
+      },
+    },
   },
 });
 
@@ -116,13 +121,6 @@ const host = process.env.HOST || "localhost";
 try {
   await app.listen({ port, host });
   app.log.info(`🚀 Server ready at: http://${host}:${port}`);
-} catch (err) {
-  console.error(err);
-  process.exit(1);
-}
-
-try {
-  app.log.info("Trying to fetch daily data...");
   await initDatabase();
   app.log.info("Successfully fetched daily data.");
   app.cron.startAllJobs();
