@@ -108,9 +108,12 @@ app.get("/today", () => {
 
 try {
   await app.listen({ port: 3000 });
-  app.log.info(`
+  app.log.info(
+    { proc: app.config["NODE_ENV"] },
+    `
   🚀 Server ready at: http://localhost:3000
-  `);
+  `
+  );
 } catch (err) {
   console.error(err);
   process.exit(1);
