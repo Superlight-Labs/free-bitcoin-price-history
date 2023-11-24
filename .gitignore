@@ -1,0 +1,6 @@
+.wrangler
+node_modules
+.vscode
+wrangler.toml
+.env
+.DS_STORE

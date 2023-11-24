@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DB_URL")
+  relationMode = "prisma"
+}
+
+model PricePointWeekly {
+  date  String   @id
+  time  DateTime
+  value Float
+}
+
+model PricePointDaily {
+  date  String   @id
+  time  DateTime
+  value Float
+}
+
+model PricePointHourly {
+  date      String
+  hour      Int
+  value     Float
+  createdAt DateTime @default(now())
+
+  @@id([date, hour])
+}
