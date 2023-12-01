@@ -8,7 +8,7 @@ import fastifyCron from "fastify-cron";
 export const prisma = new PrismaClient();
 export const app = fastify({ logger: true });
 
-const hourly = "0 0 * * * *";
+const fiveMinutes = "*/5 * * * *";
 const thirtySeconds = "*/30 * * * * *";
 
 await app.register(fastifyEnv, {
@@ -17,9 +17,12 @@ await app.register(fastifyEnv, {
   },
   schema: {
     type: "object",
-    required: ["ALPHA_VANTAGE_API_KEY"],
+    required: ["ALPHA_VANTAGE_API_KEY", "TATUM_API_KEY"],
     properties: {
       ALPHA_VANTAGE_API_KEY: {
+        type: "string",
+      },
+      TATUM_API_KEY: {
         type: "string",
       },
     },
@@ -31,7 +34,7 @@ app.register(fastifyCron, {
     {
       name: "fetch-new-price-data",
       cronTime:
-        process.env["NODE_ENV"] === "development" ? thirtySeconds : hourly,
+        process.env["NODE_ENV"] === "development" ? thirtySeconds : fiveMinutes,
       onTick: async (_) => createHourlyPricePoint(),
     },
   ],

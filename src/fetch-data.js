@@ -44,39 +44,25 @@ export const fetchDaily = async () => {
 };
 
 export const fetchHourly = async () => {
-  const res = isDev
-    ? { data: responseHourly }
-    : await axios.get(
-        `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=EUR&apikey=${app.config["ALPHA_VANTAGE_API_KEY"]}`
-      );
-
-  const priceData = res.data[avantageResKeyHourly];
-
-  const exchangeRateKey = Object.keys(priceData).find((k) =>
-    k.includes("Exchange Rate")
+  const res = await axios.get(
+    "https://api-eu1.tatum.io/v3/tatum/rate/BTC?basePair=EUR",
+    {
+      headers: {
+        "x-api-key": app.config["TATUM_API_KEY"],
+      },
+    }
   );
+
+  const { value } = res.data;
 
   const now = new Date();
 
   return {
     date: now.toLocaleDateString("en-US"),
     hour: now.getHours(),
-    value: parseFloat(priceData[exchangeRateKey]),
+    minute: now.getMinutes(),
+    value: parseFloat(value),
   };
-};
-
-const responseHourly = {
-  "Realtime Currency Exchange Rate": {
-    "1. From_Currency Code": "BTC",
-    "2. From_Currency Name": "Bitcoin",
-    "3. To_Currency Code": "CNY",
-    "4. To_Currency Name": "Chinese Yuan",
-    "5. Exchange Rate": "266276.01009600",
-    "6. Last Refreshed": "2023-11-24 09:28:05",
-    "7. Time Zone": "UTC",
-    "8. Bid Price": "266276.01009600",
-    "9. Ask Price": "266276.08104300",
-  },
 };
 
 const response = {

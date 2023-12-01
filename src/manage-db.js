@@ -28,17 +28,8 @@ export const createHourlyPricePoint = async () => {
   app.log.info(" --- START Creating hourly price point...");
   const hour = await fetchHourly();
 
-  await prisma.pricePointHourly.upsert({
-    where: {
-      date_hour: {
-        date: hour.date,
-        hour: hour.hour,
-      },
-    },
-    update: {
-      value: hour.value,
-    },
-    create: hour,
+  await prisma.pricePointHourly.create({
+    data: hour,
   });
 
   await updateWeeklyTable(hour);
