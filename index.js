@@ -128,12 +128,13 @@ const start = async () => {
     app.log.info(`🚀 Server ready at: http://${host}:${port}`);
     await initDatabase();
     app.log.info("Successfully fetched daily data.");
-    app.cron.startAllJobs();
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError) {
       app.log.warn({ err }, "Failed to run init Database script");
       return;
     }
+    app.cron.startAllJobs();
+
     app.log.error({ err }, "Error starting server");
     process.exit(1);
   }
