@@ -133,14 +133,16 @@ const start = async () => {
       app.log.warn({ err }, "Failed to run init Database script");
       return;
     }
-    app.cron.startAllJobs();
 
     app.log.error({ err }, "Error starting server");
     process.exit(1);
   }
 };
 
-start();
+await start();
+
+app.log.info("Starting cron jobs");
+app.cron.startAllJobs();
 
 process.on("uncaughtException", (err) => {
   app.log.error({ err }, "Uncaugh Exception");
