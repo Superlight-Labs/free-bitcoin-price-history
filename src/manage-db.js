@@ -26,14 +26,19 @@ export const initDatabase = async () => {
 
 export const createHourlyPricePoint = async () => {
   app.log.info(" --- START Creating hourly price point...");
-  const hour = await fetchHourly();
+  try {
+    const hour = await fetchHourly();
 
-  await prisma.pricePointHourly.create({
-    data: hour,
-  });
+    await prisma.pricePointHourly.create({
+      data: hour,
+    });
 
-  await updateWeeklyTable(hour);
-  await updateDailyTable(hour);
+    await updateWeeklyTable(hour);
+    await updateDailyTable(hour);
+  } catch (err) {
+    app.log.error({ err }, "Failed to create hourly price point");
+  }
+
   app.log.info(" --- END Creating hourly price point...");
 };
 

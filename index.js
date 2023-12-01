@@ -2,6 +2,7 @@ import { createHourlyPricePoint, initDatabase } from "./src/manage-db.js";
 
 import fastifyEnv from "@fastify/env";
 import { PrismaClient } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import fastify from "fastify";
 import fastifyCron from "fastify-cron";
 
@@ -121,16 +122,24 @@ app.all("*", (request, reply) => {
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || "localhost";
 
-try {
-  await app.listen({ port, host });
-  app.log.info(`🚀 Server ready at: http://${host}:${port}`);
-  await initDatabase();
-  app.log.info("Successfully fetched daily data.");
-  app.cron.startAllJobs();
-} catch (err) {
-  console.error(err);
-  process.exit(1);
-}
+const start = async () => {
+  try {
+    await app.listen({ port, host });
+    app.log.info(`🚀 Server ready at: http://${host}:${port}`);
+    await initDatabase();
+    app.log.info("Successfully fetched daily data.");
+    app.cron.startAllJobs();
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError) {
+      app.log.warn({ err }, "Failed to run init Database script");
+      return;
+    }
+    app.log.error({ err }, "Error starting server");
+    process.exit(1);
+  }
+};
+
+start();
 
 process.on("uncaughtException", (err) => {
   app.log.error({ err }, "Uncaugh Exception");
