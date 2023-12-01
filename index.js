@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import fastify from "fastify";
 import fastifyCron from "fastify-cron";
+import { register } from "./src/routes.js";
 
 export const prisma = new PrismaClient();
 export const app = fastify({ logger: true });
@@ -47,77 +48,7 @@ app.addHook("preHandler", (req, reply, done) => {
   done();
 });
 
-app.get("/", () => {
-  return { status: "ok" };
-});
-
-app.get("/health", () => {
-  return { status: "ok" };
-});
-
-app.get("/total", () => {
-  return prisma.$queryRaw`SELECT * FROM PricePointWeekly WHERE nr % 3 = 0 ORDER BY time asc`;
-});
-
-app.get("/year", () => {
-  const yearAgo = new Date();
-  yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-
-  return prisma.pricePointWeekly.findMany({
-    where: {
-      time: {
-        gte: yearAgo,
-      },
-    },
-    orderBy: {
-      time: "asc",
-    },
-  });
-});
-
-app.get("/monthly", () => {
-  const monthAgo = new Date();
-  monthAgo.setMonth(monthAgo.getMonth() - 1);
-
-  return prisma.pricePointDaily.findMany({
-    where: {
-      time: {
-        gte: monthAgo,
-      },
-    },
-    orderBy: {
-      time: "asc",
-    },
-  });
-});
-
-app.get("/weekly", () => {
-  return prisma.$queryRaw`
-    SELECT * FROM PricePointHourly 
-    WHERE nr % 3 = 0 
-      AND createdAt between date_sub(now(), INTERVAL 1 WEEK) and now()
-    ORDER BY createdAt asc`;
-});
-
-app.get("/today", () => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  return prisma.pricePointHourly.findMany({
-    where: {
-      createdAt: {
-        gte: yesterday,
-      },
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
-});
-
-app.all("*", (request, reply) => {
-  reply.status(404).send({ error: "Route does not exist" });
-});
+register(app, prisma);
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || "localhost";
