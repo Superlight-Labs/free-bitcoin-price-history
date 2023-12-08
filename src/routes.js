@@ -62,7 +62,7 @@ export const register = (app, prisma) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    return prisma.pricePointHourly.findMany({
+    return prisma.pricePointToday.findMany({
       where: {
         time: {
           gte: yesterday,
