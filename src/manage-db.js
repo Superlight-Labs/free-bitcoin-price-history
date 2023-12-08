@@ -36,7 +36,7 @@ export const createHourlyPricePoint = async () => {
   try {
     const hour = await fetchNow();
 
-    await prisma.pricePointHourly.create({
+    await prisma.pricePointToday.create({
       data: hour,
     });
 
@@ -49,8 +49,34 @@ export const createHourlyPricePoint = async () => {
 };
 
 const updateDailyTable = async (hour) => {
-  app.log.info("Fetching latest daily pricepoint...");
+  app.log.info("Fetching latest hourly pricepoint...");
 
+  const [latestHourly] = await prisma.pricePointHourly.findMany({
+    orderBy: {
+      time: "desc",
+    },
+    take: 1,
+  });
+
+  const hourAgo = new Date();
+  hourAgo.setHours(hourAgo.getHours() - 1);
+
+  // Do nothing if pricepoint exists for that hour
+  if (latestHourly && latestHourly.time > hourAgo) {
+    app.log.info("Price point already exists for this hour");
+    return;
+  }
+
+  app.log.info("Creating new hourly price point...");
+  await prisma.pricePointHourly.create({
+    data: {
+      date: hour.date,
+      time: new Date(),
+      value: hour.value,
+    },
+  });
+
+  app.log.info("Fetching latest daily pricepoint...");
   const [latestDaily] = await prisma.pricePointDaily.findMany({
     orderBy: {
       time: "desc",
@@ -73,16 +99,26 @@ const updateDailyTable = async (hour) => {
     },
   });
 
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 32);
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setDate(oneMonthAgo.getDate() - 32);
 
-  app.log.info("Deleting over month old hourly price point...");
-  const { count } = await prisma.pricePointHourly.deleteMany({
+  app.log.info("Deleting over month old hourly and 'today' price points...");
+  const { count: hourly } = await prisma.pricePointHourly.deleteMany({
     where: {
       time: {
-        lte: oneWeekAgo,
+        lte: oneMonthAgo,
       },
     },
   });
-  app.log.info(`Deleted ${count} hourly price points.`);
+
+  const { count: hourlyToday } = await prisma.pricePointToday.deleteMany({
+    where: {
+      time: {
+        lte: oneMonthAgo,
+      },
+    },
+  });
+  app.log.info(
+    `Deleted ${hourly} hourly price points & ${hourlyToday} today price points`
+  );
 };

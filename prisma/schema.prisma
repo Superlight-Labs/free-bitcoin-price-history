@@ -21,3 +21,10 @@ model PricePointHourly {
   time  DateTime @default(now())
   nr    Int      @id @default(autoincrement())
 }
+
+model PricePointToday {
+  date  String
+  value Float
+  time  DateTime @default(now())
+  nr    Int      @id @default(autoincrement())
+}
