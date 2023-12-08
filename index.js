@@ -1,6 +1,5 @@
 import { createHourlyPricePoint, initDatabase } from "./src/manage-db.js";
 
-import fastifyEnv from "@fastify/env";
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import fastify from "fastify";
@@ -8,28 +7,14 @@ import fastifyCron from "fastify-cron";
 import { register } from "./src/routes.js";
 
 export const prisma = new PrismaClient();
-export const app = fastify({ logger: true });
+export const app = fastify({
+  logger: {
+    level: "debug",
+  },
+});
 
 const fiveMinutes = "*/5 * * * *";
 const thirtySeconds = "*/30 * * * * *";
-
-await app.register(fastifyEnv, {
-  dotenv: {
-    path: ".env",
-  },
-  schema: {
-    type: "object",
-    required: ["ALPHA_VANTAGE_API_KEY", "TATUM_API_KEY"],
-    properties: {
-      ALPHA_VANTAGE_API_KEY: {
-        type: "string",
-      },
-      TATUM_API_KEY: {
-        type: "string",
-      },
-    },
-  },
-});
 
 app.register(fastifyCron, {
   jobs: [

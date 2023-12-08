@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "node --watch index.js | pino-pretty",
     "start": "node index.js | pino-pretty",
-    "db:reset": "prisma db push --force-reset && prisma db seed"
+    "db:reset": "prisma db push --force-reset"
   },
   "dependencies": {
-    "@fastify/env": "^4.3.0",
     "@prisma/client": "5.5.2",
     "axios": "^1.6.1",
     "fastify": "4.24.3",

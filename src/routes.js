@@ -8,14 +8,18 @@ export const register = (app, prisma) => {
   });
 
   app.get("/total", () => {
-    return prisma.$queryRaw`SELECT * FROM PricePointWeekly WHERE nr % 3 = 0 ORDER BY time asc`;
+    return prisma.pricePointDaily.findMany({
+      orderBy: {
+        time: "asc",
+      },
+    });
   });
 
   app.get("/year", () => {
     const yearAgo = new Date();
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
 
-    return prisma.pricePointWeekly.findMany({
+    return prisma.pricePointDaily.findMany({
       where: {
         time: {
           gte: yearAgo,

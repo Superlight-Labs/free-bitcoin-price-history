@@ -8,17 +8,11 @@ datasource db {
   relationMode = "prisma"
 }
 
-model PricePointWeekly {
-  date  String   @id
-  time  DateTime
-  value Float
-  nr    Int      @unique @default(autoincrement())
-}
-
 model PricePointDaily {
-  date  String   @id
+  date  String
   time  DateTime
   value Float
+  nr    Int      @id @default(autoincrement())
 }
 
 model PricePointHourly {
