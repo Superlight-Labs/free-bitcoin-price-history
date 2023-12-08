@@ -15,6 +15,46 @@ export const register = (app, prisma) => {
     });
   });
 
+  app.get("/total-graph", async () => {
+    const total = await prisma.pricePointDaily.findMany({
+      orderBy: {
+        time: "asc",
+      },
+    });
+
+    const delta = Math.floor(total.length / 200);
+    const res = [];
+    for (let i = 0; i < total.length; i = i + delta) {
+      res.push(total[i]);
+    }
+
+    return res;
+  });
+
+  app.get("/5y-graph", async () => {
+    const fiveYAgo = new Date();
+    fiveYAgo.setFullYear(fiveYAgo.getFullYear() - 5);
+
+    const total = await prisma.pricePointDaily.findMany({
+      where: {
+        time: {
+          gte: fiveYAgo,
+        },
+      },
+      orderBy: {
+        time: "asc",
+      },
+    });
+
+    const delta = Math.floor(total.length / 200);
+    const res = [];
+    for (let i = 0; i < total.length; i = i + delta) {
+      res.push(total[i]);
+    }
+
+    return res;
+  });
+
   app.get("/year", () => {
     const yearAgo = new Date();
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
