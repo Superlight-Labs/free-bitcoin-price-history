@@ -16,11 +16,8 @@ model PricePointDaily {
 }
 
 model PricePointHourly {
-  date      String
-  hour      Int
-  minute    Int
-  value     Float
-  createdAt DateTime @default(now())
-
-  nr Int @id @default(autoincrement())
+  date  String
+  value Float
+  time  DateTime @default(now())
+  nr    Int      @id @default(autoincrement())
 }

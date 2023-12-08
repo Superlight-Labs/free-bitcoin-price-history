@@ -35,16 +35,11 @@ export const register = (app, prisma) => {
     const monthAgo = new Date();
     monthAgo.setMonth(monthAgo.getMonth() - 1);
 
-    return prisma.pricePointDaily.findMany({
-      where: {
-        time: {
-          gte: monthAgo,
-        },
-      },
-      orderBy: {
-        time: "asc",
-      },
-    });
+    return prisma.$queryRaw`
+    SELECT * FROM PricePointHourly 
+    WHERE nr % 3 = 0 
+      AND time between date_sub(now(), INTERVAL 1 MONTH) and now()
+    ORDER BY time asc`;
   });
 
   app.get("/weekly", () => {
@@ -53,13 +48,12 @@ export const register = (app, prisma) => {
 
     return prisma.pricePointHourly.findMany({
       where: {
-        minute: 0,
-        createdAt: {
+        time: {
           gte: lastWeek,
         },
       },
       orderBy: {
-        createdAt: "asc",
+        time: "asc",
       },
     });
   });
@@ -70,12 +64,12 @@ export const register = (app, prisma) => {
 
     return prisma.pricePointHourly.findMany({
       where: {
-        createdAt: {
+        time: {
           gte: yesterday,
         },
       },
       orderBy: {
-        createdAt: "asc",
+        time: "asc",
       },
     });
   });

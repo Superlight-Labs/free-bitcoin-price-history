@@ -1,19 +1,40 @@
 import { app, prisma } from "../index.js";
-import { fetchDaily, fetchHourly } from "./fetch-data.js";
+import { fetchInterval, fetchNow } from "./fetch-data.js";
 
 export const initDatabase = async () => {
   app.log.info("Fetching new daily pricepoints");
-  const newDailyPricePoints = await fetchDaily();
+  const [latest] = await prisma.pricePointDaily.findMany({
+    orderBy: {
+      time: "desc",
+    },
+    take: 1,
+  });
+
+  const newDailyPricePoints = await fetchInterval("max", latest);
 
   await prisma.pricePointDaily.createMany({
     data: newDailyPricePoints,
+  });
+
+  const [latestHour] = await prisma.pricePointHourly.findMany({
+    orderBy: {
+      time: "desc",
+    },
+    take: 1,
+  });
+
+  app.log.info("Fetching new hourly pricepoints");
+  const newHourlyPricePoints = await fetchInterval("30", latestHour);
+
+  await prisma.pricePointHourly.createMany({
+    data: newHourlyPricePoints,
   });
 };
 
 export const createHourlyPricePoint = async () => {
   app.log.info(" --- START Creating hourly price point...");
   try {
-    const hour = await fetchHourly();
+    const hour = await fetchNow();
 
     await prisma.pricePointHourly.create({
       data: hour,
@@ -53,12 +74,12 @@ const updateDailyTable = async (hour) => {
   });
 
   const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 32);
 
-  app.log.info("Deleting week old hourly price point...");
+  app.log.info("Deleting over month old hourly price point...");
   const { count } = await prisma.pricePointHourly.deleteMany({
     where: {
-      createdAt: {
+      time: {
         lte: oneWeekAgo,
       },
     },
