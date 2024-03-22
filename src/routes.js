@@ -76,9 +76,9 @@ export const register = (app, prisma) => {
     monthAgo.setMonth(monthAgo.getMonth() - 1);
 
     return prisma.$queryRaw`
-    SELECT * FROM PricePointHourly 
+    SELECT * FROM "PricePointHourly" 
     WHERE nr % 3 = 0 
-      AND time between date_sub(now(), INTERVAL 1 MONTH) and now()
+      AND time >= (CURRENT_DATE - INTERVAL '1 month')
     ORDER BY time asc`;
   });
 
