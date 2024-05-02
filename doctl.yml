@@ -10,7 +10,7 @@ ingress:
       match:
         path:
           prefix: /
-name: orca-app
+name: bitcoin-history-api
 region: fra
 services:
   - environment_slug: node-js
