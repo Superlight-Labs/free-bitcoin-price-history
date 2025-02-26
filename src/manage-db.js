@@ -10,7 +10,7 @@ export const initDatabase = async () => {
     take: 1,
   });
 
-  const newDailyPricePoints = await fetchInterval("max", latest);
+  const newDailyPricePoints = await fetchInterval("365", latest);
 
   await prisma.pricePointDaily.createMany({
     data: newDailyPricePoints,

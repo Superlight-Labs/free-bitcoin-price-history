@@ -1,7 +1,7 @@
 import axios from "axios";
 import { app } from "../index.js";
 
-export const fetchInterval = async (days, latest) => {
+export const fetchInterval = async (days = 365, latest) => {
   const res = await axios.get(
     `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}&precision=2`
   );
